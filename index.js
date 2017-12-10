@@ -36,7 +36,7 @@ class WebsocketServer {
      * @param {*} handler The handler function(msg, responseCallback(msg))
      * @param {*} acl Optional ACD configuraton
      */
-    AddHandler(funcName, handler, acl={}) {
+    addHandler(funcName, handler, acl={}) {
         this.handlers[funcName] = new CallbackHandler(funcName, handler, acl, log);
     }
 
