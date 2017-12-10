@@ -1,10 +1,11 @@
 # rf-api-websocket
 
 rf-api implementation for RPC over websockets using JSON messages with optional ACL.
+
 NOTE: Alpha!
 
 ##  ws server
-* uses express server instance
+* Uses express server instance
 * Websocket communication service
 * Allows safe RPC
 * Uses JSON messages
@@ -58,6 +59,7 @@ services.broadcast (obj)
 ## Development
 
 Install the dev tools with
+> npm install
 
 Then you can runs some test cases and eslint with:
 > npm test

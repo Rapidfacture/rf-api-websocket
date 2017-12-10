@@ -12,6 +12,7 @@ const API = require('rf-load').require('rf-api').API;
 * # rf-api-websocket
 *
 * rf-api implementation for RPC over websockets using JSON messages with optional ACL.
+*
 * NOTE: Alpha!
 *
 */
@@ -20,7 +21,7 @@ const API = require('rf-load').require('rf-api').API;
 class WebsocketServer {
    /**
    * ##  ws server
-   * * uses express server instance
+   * * Uses express server instance
    * * Websocket communication service
    * * Allows safe RPC
    * * Uses JSON messages
@@ -227,10 +228,10 @@ module.exports.start = function (options, startNextModule) {
 * ## Development
 *
 * Install the dev tools with
-> npm install
+* > npm install
 *
 * Then you can runs some test cases and eslint with:
-*> npm test
+* > npm test
 *
 * Generate Docs:
 * > npm run-script doc
