@@ -8,9 +8,23 @@ const http = require('rf-load').require('http');
 const API = require('rf-load').require('rf-api').API;
 
 
+/**
+* # rf-api-websocket
+*
+* rf-api implementation for RPC over websockets using JSON messages with optional ACL.
+* NOTE: Alpha!
+*
+*/
+
 
 class WebsocketServer {
-   /* ---------------- ws server and events ---------------- */
+   /**
+   * ##  ws server
+   * * uses express server instance
+   * * Websocket communication service
+   * * Allows safe RPC
+   * * Uses JSON messages
+   */
    constructor () {
       // All active connections for broadcast
       this.allWS = [];
@@ -78,31 +92,52 @@ class WebsocketServer {
    /* ---------------- ws methods ---------------- */
 
    /**
+     * ## ws methods
+     */
+
+
+   /**
+     * ### addHandler
      * Add a simple callback handler.
      * Errors can be signalled via exceptions
      * Any previous handler with the same func name will be replaced.
-     * @param {*} funcName The name of the handler. In order for the handler to be called, this needs to be used
+     * ```js
+     * services.addHandler (funcName, callback, acl = {})
+     * ```
+     * * `funcName` The name of the handler. In order for the handler to be called, this needs to be used
      * in the func attribute of the received websocket message.
-     * @param {*} handler The handler function(msg, responseCallback(msg))
-     * @param {*} acl Optional ACD configuraton
+     * * `callback` The handler function(msg, responseCallback(msg))
+     * * `acl` Optional ACD configuraton
      */
    addHandler (funcName, callback, acl = {}) {
       this.handlers[funcName] = new CallbackHandler(funcName, callback, acl, log);
    }
 
    /**
+     * ### addPromiseHandler
      * Add a promise callback handler that either resolves to null (no response) or to
      * response data and signals exceptions via rejection (logged, no response.
      * Any previous handler with the same func name will be replaced.
-     * @param {*} funcName The name of the handler. In order for the handler to be called, this needs to be used
-     * in the func attribute of the websocket message.
-     * @param {*} handler The handler function(msg) that returns a Promise as described above.
-     * @param {*} acl Optional ACD configuraton
+     * ```js
+     * services.addPromiseHandler (funcName, genPromise, acl = {})
+     * ```
+     * * `funcName` The name of the handler. In order for the handler to be called, this needs to be used
+     * in the func attribute of the received websocket message.
+     * * `callback` The handler function(msg, responseCallback(msg))
+     * * `acl` Optional ACD configuraton
      */
    addPromiseHandler (funcName, genPromise, acl = {}) {
       this.handlers[funcName] = new PromiseHandler(funcName, genPromise, acl, log);
    }
 
+   /**
+     * ### sendObj
+     * ```js
+     * services.sendObj (ws, obj)
+     * ```
+     * TODO: integrate callbackID
+     * maybe one raw send method, and one preconfigured (default to use)
+     */
    sendObj (ws, obj) {
       try {
          return ws.send(JSON.stringify(obj));
@@ -111,10 +146,14 @@ class WebsocketServer {
       }
    }
 
+
    /**
+     * ### broadcast
      * Send the given object to ALL the currently connected websockets
      * NOTE: This sends the object as-is.
-     * @param {*} obj
+     * ```js
+     * services.broadcast (obj)
+     * ```
      */
    broadcast (obj) {
       for (let ws of this.allWS) {
@@ -174,3 +213,33 @@ module.exports.start = function (options, startNextModule) {
    API.Services.registerFunction(WebsocketServer);
    startNextModule();
 };
+
+
+
+/**
+*
+* ## PeerDependencies
+* * `rf-log`
+* * `rf-load`
+* * `rf-api`
+* * rapidfacture `http` file
+*
+* ## Development
+*
+* Install the dev tools with
+> npm install
+*
+* Then you can runs some test cases and eslint with:
+*> npm test
+*
+* Generate Docs:
+* > npm run-script doc
+*
+* ## To Do
+* * get the everything running
+*
+* ## Legal Issues
+* * License: MIT
+* * Author: Rapidfacture GmbH
+*
+*/
