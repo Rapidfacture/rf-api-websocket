@@ -3,6 +3,11 @@ const WebSocketServer = require('ws').Server;
 const log =  require('rf-log');
 const util = require('util');
 
+/**
+ * Represents a handler function that takes (data, sendCallback),
+ * signals errors via exceptions and can call the send callback multiple times
+ * if required.
+ */
 class CallbackHandler {
     constructor(name, callback, acl, log) {
         this.name = name;
@@ -12,7 +17,35 @@ class CallbackHandler {
     }
 
     Handle(data, send) {
-        this.callback(data, send);
+        try{
+            this.callback(data, send);
+        } catch(err) {
+            this.log.error(`Exception in websocket handler ${this.name}: ${err}`);
+        }
+    }
+}
+
+/**
+ * Represents a handler function that takes a promise
+ * that either resolves to null (no response) or to a 
+ */
+class PromiseHandler {
+    constructor(name, genPromise, acl, log) {
+        this.name = name;
+        this.genPromise = genPromise;
+        this.acl = acl;
+        this.log = log;
+    }
+
+    Handle(data, send) {
+        this.callback(data).then(result => {
+            if(result !== null) {
+                send(result);
+            }
+        }).catch(err =>{
+            this.log.error(`Websocket handler ${this.name} rejected: ${err}`);
+
+        })
     }
 }
 
@@ -30,18 +63,34 @@ class WebsocketServer {
     }
 
     /**
-     * Add a simple callback handler. Any previous handler with the same func name will be replaced.
+     * Add a simple callback handler.
+     * Errors can be signalled via exceptions
+     * Any previous handler with the same func name will be replaced.
      * @param {*} funcName The name of the handler. In order for the handler to be called, this needs to be used
-     * in the func attribute of the websocket message.
+     * in the func attribute of the received websocket message.
      * @param {*} handler The handler function(msg, responseCallback(msg))
      * @param {*} acl Optional ACD configuraton
      */
-    addHandler(funcName, handler, acl={}) {
-        this.handlers[funcName] = new CallbackHandler(funcName, handler, acl, log);
+    addHandler(funcName, callback, acl={}) {
+        this.handlers[funcName] = new CallbackHandler(funcName, callback, acl, log);
     }
 
-    onConnection(server) {
+    /**
+     * Add a promise callback handler that either resolves to null (no response) or to
+     * response data and signals exceptions via rejection (logged, no response.
+     * Any previous handler with the same func name will be replaced.
+     * @param {*} funcName The name of the handler. In order for the handler to be called, this needs to be used
+     * in the func attribute of the websocket message.
+     * @param {*} handler The handler function(msg) that returns a Promise as described above.
+     * @param {*} acl Optional ACD configuraton
+     */
+    addPromiseHandler(funcName, genPromise, acl = {}) {
+        this.handlers[funcName] = new PromiseHandler(funcName, genPromise, acl, log);
+    }
+
+    onConnection(ws) {
         log.info(`websocket connection open: ${ws.upgradeReq.url}`)
+        // Add to broadcast list
         this.allWS.push(ws);
         //console.log(ws.upgradeReq.url);
         ws.on('message', (data, flags) => this.onMessage(ws, data, flags));
@@ -96,6 +145,17 @@ class WebsocketServer {
             return ws.send(JSON.stringify(obj));
         } catch(err) {
             this.log.error(`Failed to send websocket message: ${err}`);
+        }
+    }
+
+    /**
+     * Send the given object to ALL the currently connected. websockets
+     * NOTE: This sends the object as-is.
+     * @param {*} obj 
+     */
+    broadcast(obj) {
+        for(let ws of this.allWS) {
+            this.sendObj(ws, obj);
         }
     }
 }
