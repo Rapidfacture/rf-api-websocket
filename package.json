@@ -17,6 +17,11 @@
       }
    ],
    "main": "index.js",
+   "scripts": {
+     "prepublish": "npm run-script doc && sh test/isRepoClean && npm test",
+     "test": "grunt",
+     "doc": "cat index.js Request.js Response.js Services.js > out.js && node_modules/mdextract/bin/mdextract out.js > README.md && rm out.js"
+   },
    "dependencies": {
       "jsonwebtoken": "^5.0.5",
       "lodash": "^4.17.4",
@@ -32,7 +37,8 @@
    },
    "devDependencies": {
       "grunt": "1.0.1",
-      "grunt-eslint": "20.1.0"
+      "grunt-eslint": "20.1.0",
+      "mdextract": "1.0.0"
    },
    "scripts": {
       "prepublish": "npm test",
