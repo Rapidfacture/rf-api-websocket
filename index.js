@@ -211,7 +211,8 @@ class PromiseHandler {
 // integrate into `rf-api`
 // TODO: is this the correct way? the websockets will be in "Services"?
 module.exports.start = function (options, startNextModule) {
-   API.Services.registerFunction(WebsocketServer);
+   const instance = new WebsocketServer();
+   API.Services.registerFunction(function WSAPI () { return instance; });
    startNextModule();
 };
 
