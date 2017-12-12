@@ -1,11 +1,6 @@
-
 const WebSocketServer = require('ws').Server;
 const log = require('rf-log');
 const util = require('util');
-
-// peer dependency: rf-load, http server and API
-const http = require('rf-load').require('http');
-const API = require('rf-load').require('rf-api').API;
 
 
 /**
@@ -16,8 +11,6 @@ const API = require('rf-load').require('rf-api').API;
 * NOTE: Alpha!
 *
 */
-
-
 class WebsocketServer {
    /**
    * ##  ws server
@@ -26,13 +19,13 @@ class WebsocketServer {
    * * Allows safe RPC
    * * Uses JSON messages
    */
-   constructor () {
+   constructor (httpServer) {
       // All active connections for broadcast
       this.allWS = [];
       this.handlers = {}; // func name => handler(msg, responseCallback(err, ))
       // Initialize server
       this.server = new WebSocketServer({
-         server: http.server
+         server: httpServer
       });
       this.server.on('connection', this.onConnection);
    }
@@ -211,8 +204,13 @@ class PromiseHandler {
 // integrate into `rf-api`
 // TODO: is this the correct way? the websockets will be in "Services"?
 module.exports.start = function (options, startNextModule) {
-   const instance = new WebsocketServer();
-   API.Services.registerFunction(function WSAPI () { return instance; });
+   const API = require('rf-load').require('rf-api').API;
+   const http = require('rf-load').require('http');
+   const instance = new WebsocketServer(http.server);
+
+   API.onWSMessage = function (...args) { instance.addHandler(...args); };
+   API.onWSMessagePromise = function (...args) { instance.addPromiseHandler(...args); };
+
    startNextModule();
 };
 
