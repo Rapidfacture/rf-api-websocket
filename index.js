@@ -214,7 +214,8 @@ module.exports.start = function (options, startNextModule) {
    startNextModule();
 };
 
-
+// Export class for the unlikely case of non-rf-api users. But who knows?
+module.exports.WebsocketServer = WebsocketServer;
 
 /**
 *
