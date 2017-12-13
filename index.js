@@ -76,7 +76,7 @@ class WebsocketServer {
       this.log.info(`Received correct websocket message with func ${func}`);
       // Call handler with custom "send" callback
       return handler.handle(data, newData => {
-         // NOTE: Multiple calls will
+         // NOTE: Multiple calls will send multiple msgs
          const wsObj = protoObj;
          wsObj.data = newData;
          return this.sendObj(wsObj);
