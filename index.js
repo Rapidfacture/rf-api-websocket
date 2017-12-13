@@ -169,7 +169,7 @@ class CallbackHandler {
       this.acl = acl;
    }
 
-   Handle (data, send) {
+   handle (data, send) {
       try {
          this.callback(data, send);
       } catch (err) {
@@ -187,7 +187,7 @@ class PromiseHandler {
       this.acl = acl;
    }
 
-   Handle (data, send) {
+   handle (data, send) {
       this.callback(data).then(result => {
          if (result !== null) {
             if (!result.err) {
