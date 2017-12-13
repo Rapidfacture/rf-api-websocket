@@ -20,18 +20,18 @@ class WebsocketServer {
    * * Uses JSON messages
    */
    constructor (httpServer) {
-      // All active connections for broadcast
-      this.allWS = [];
-      this.handlers = {}; // func name => handler(msg, responseCallback(err, ))
+      log.info("Initializing websocket server")
       // Initialize server
       this.server = new WebSocketServer({
          server: httpServer
       });
-      this.server.on('connection', this.onConnection);
+      this.server.on('connection', (ws) => this.onConnection(ws));
+      this.allWS = []; // All active connections for broadcast
+      this.handlers = {}; // func name => handler(msg, responseCallback(err, ))
    }
 
    onConnection (ws) {
-      log.info(`websocket connection open: ${ws.upgradeReq.url}`);
+      log.info(`New websocket connected`);
       // Add to broadcast list
       this.allWS.push(ws);
       // console.log(ws.upgradeReq.url);
@@ -40,7 +40,7 @@ class WebsocketServer {
    }
 
    onClose (ws) {
-      log.info('websocket connection close');
+      log.info('Websocket connection closed');
       // Remove from allWS list
       let idx = this.allWS.indexOf(ws);
       if (idx > -1) {
@@ -53,15 +53,15 @@ class WebsocketServer {
       try {
          msg = JSON.parse(data);
       } catch (ex) {
-         return this.log.error(`Failed to parse websocket message JSON: ${ex}`);
+         return log.error(`Failed to parse websocket message JSON: ${ex}`);
       }
-      this.log.info('websocket message received');
+      log.info('websocket message received');
       // Check msg validity
       if (!msg.func) {
-         return this.log.error(`Received websocket message without specified func: ${util.inspect(msg)}`);
+         return log.error(`Received websocket message without specified func: ${util.inspect(msg)}`);
       }
       if (!msg.data) {
-         return this.log.error(`Received websocket message without any data: ${util.inspect(msg)}`);
+         return log.error(`Received websocket message without any data: ${util.inspect(msg)}`);
       }
       data = msg.data;
       // Prepare "prototype" (to be sent back), i.e. keep anything besides 'data'
@@ -71,9 +71,9 @@ class WebsocketServer {
       const func = msg.func;
       const handler = this.handlers[func];
       if (!handler) {
-         return this.log.error(`Can't find any handler for function ${func}`);
+         return log.error(`Can't find any handler for function ${func}`);
       }
-      this.log.info(`Received correct websocket message with func ${func}`);
+      log.info(`Received correct websocket message with func ${func}`);
       // Call handler with custom "send" callback
       return handler.handle(data, newData => {
          // NOTE: Multiple calls will send multiple msgs
@@ -104,7 +104,7 @@ class WebsocketServer {
      * * `acl` Optional ACD configuraton
      */
    addHandler (funcName, callback, acl = {}) {
-      this.handlers[funcName] = new CallbackHandler(funcName, callback, acl, log);
+      this.handlers[funcName] = new CallbackHandler(funcName, callback, acl);
    }
 
    /**
@@ -121,7 +121,7 @@ class WebsocketServer {
      * * `acl` Optional ACD configuraton
      */
    addPromiseHandler (funcName, genPromise, acl = {}) {
-      this.handlers[funcName] = new PromiseHandler(funcName, genPromise, acl, log);
+      this.handlers[funcName] = new PromiseHandler(funcName, genPromise, acl);
    }
 
    /**
@@ -136,7 +136,7 @@ class WebsocketServer {
       try {
          return ws.send(JSON.stringify(obj));
       } catch (err) {
-         this.log.error(`Failed to send websocket message: ${err}`);
+         log.error(`Failed to send websocket message: ${err}`);
       }
    }
 
@@ -163,18 +163,17 @@ class WebsocketServer {
 // signals errors via exceptions and can call the send callback multiple times
 // if required.
 class CallbackHandler {
-   constructor (name, callback, acl, log) {
+   constructor (name, callback, acl) {
       this.name = name;
       this.callback = callback;
       this.acl = acl;
-      this.log = log;
    }
 
    Handle (data, send) {
       try {
          this.callback(data, send);
       } catch (err) {
-         this.log.error(`Exception in websocket handler ${this.name}: ${err}`);
+         log.error(`Exception in websocket handler ${this.name}: ${err}`);
       }
    }
 }
@@ -182,11 +181,10 @@ class CallbackHandler {
 // Represents a handler function that takes a promise
 // that either resolves to null (no response) or to a
 class PromiseHandler {
-   constructor (name, genPromise, acl, log) {
+   constructor (name, genPromise, acl) {
       this.name = name;
       this.genPromise = genPromise;
       this.acl = acl;
-      this.log = log;
    }
 
    Handle (data, send) {
@@ -198,7 +196,7 @@ class PromiseHandler {
             send(result);
          }
       }).catch(err => {
-         this.log.error(`Websocket handler ${this.name} rejected: ${err}`);
+         log.error(`Websocket handler ${this.name} rejected: ${err}`);
          send({err: err});
       });
    }
