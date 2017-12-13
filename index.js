@@ -1,7 +1,7 @@
 const WebSocketServer = require('ws').Server;
 const log = require('rf-log');
 const util = require('util');
-
+const _ = require("lodash");
 
 /**
 * # rf-api-websocket
@@ -60,7 +60,7 @@ class WebsocketServer {
       if (!msg.func) {
          return log.error(`Received websocket message without specified func: ${util.inspect(msg)}`);
       }
-      if (!msg.data) {
+      if (_.isNil(msg.data)) { // null or undefined. Empty data is OK as long as its present
          return log.error(`Received websocket message without any data: ${util.inspect(msg)}`);
       }
       data = msg.data;

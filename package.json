@@ -1,43 +1,43 @@
 {
-   "name": "rf-api-websocket",
-   "version": "0.0.2",
-   "description": "rf-api implementation for RPC over websockets using JSON messages with optional ACL",
-   "author": {
-      "name": "Felix Furtmayr"
-   },
-   "license": "MIT",
-   "repository": {
-      "type": "git",
-      "url": "git@github.com:RAPIDFACTURE/rf-api-websocket.git"
-   },
-   "maintainers": [
-      {
-         "name": "felix_furtmayr",
-         "email": "ff@rapidfacture.com"
-      }
-   ],
-   "main": "index.js",
-   "dependencies": {
-      "jsonwebtoken": "^5.0.5",
-      "lodash": "^4.17.4",
-      "node-cache": "4.1.1",
-      "rf-log": "^0.1.4",
-      "ws": "^3.3.2"
-   },
-   "peerDependencies": {
-      "rf-config": "^0.1.14",
-      "rf-log": "^0.1.4",
-      "rf-load": "^0.1.10",
-      "rf-acl": "^0.1.x"
-   },
-   "devDependencies": {
-      "grunt": "1.0.1",
-      "grunt-eslint": "20.1.0",
-      "mdextract": "1.0.0"
-   },
-   "scripts": {
-      "prepublish": "npm run-script doc && sh test/isRepoClean && npm test",
-      "test": "grunt",
-      "doc": "node_modules/mdextract/bin/mdextract index.js > README.md"
-   }
+  "name": "rf-api-websocket",
+  "version": "0.0.2",
+  "description": "rf-api implementation for RPC over websockets using JSON messages with optional ACL",
+  "author": {
+    "name": "Felix Furtmayr"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:RAPIDFACTURE/rf-api-websocket.git"
+  },
+  "maintainers": [
+    {
+      "name": "felix_furtmayr",
+      "email": "ff@rapidfacture.com"
+    }
+  ],
+  "main": "index.js",
+  "dependencies": {
+    "jsonwebtoken": "^5.0.5",
+    "lodash": "^4.17.4",
+    "node-cache": "4.1.1",
+    "rf-log": "^0.1.4",
+    "ws": "^3.3.2"
+  },
+  "peerDependencies": {
+    "rf-config": "^0.1.14",
+    "rf-log": "^0.1.4",
+    "rf-load": "^0.1.10",
+    "rf-acl": "^0.1.x"
+  },
+  "devDependencies": {
+    "grunt": "1.0.1",
+    "grunt-eslint": "20.1.0",
+    "mdextract": "1.0.0"
+  },
+  "scripts": {
+    "prepublish": "npm run-script doc && sh test/isRepoClean && npm test",
+    "test": "grunt",
+    "doc": "node_modules/mdextract/bin/mdextract index.js > README.md"
+  }
 }
