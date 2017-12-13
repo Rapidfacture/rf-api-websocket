@@ -73,13 +73,12 @@ class WebsocketServer {
       if (!handler) {
          return log.error(`Can't find any handler for function ${func}`);
       }
-      log.info(`Received correct websocket message with func ${func}`);
       // Call handler with custom "send" callback
       return handler.handle(data, newData => {
          // NOTE: Multiple calls will send multiple msgs
          const wsObj = protoObj;
          wsObj.data = newData;
-         return this.sendObj(wsObj);
+         return this.sendObj(ws, wsObj);
       });
    }
 
