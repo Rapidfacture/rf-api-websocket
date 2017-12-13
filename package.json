@@ -1,9 +1,9 @@
 {
   "name": "rf-api-websocket",
-  "version": "0.0.2",
+  "version": "0.0.1",
   "description": "rf-api implementation for RPC over websockets using JSON messages with optional ACL",
   "author": {
-    "name": "Felix Furtmayr"
+    "name": "Uli Köhler"
   },
   "license": "MIT",
   "repository": {
@@ -12,8 +12,8 @@
   },
   "maintainers": [
     {
-      "name": "felix_furtmayr",
-      "email": "ff@rapidfacture.com"
+      "name": "Uli Köhler",
+      "email": "ukoehler@techoverflow.net"
     }
   ],
   "main": "index.js",
