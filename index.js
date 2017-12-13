@@ -192,10 +192,14 @@ class PromiseHandler {
    Handle (data, send) {
       this.callback(data).then(result => {
          if (result !== null) {
+            if (!result.err) {
+               result.err = null;
+            }
             send(result);
          }
       }).catch(err => {
          this.log.error(`Websocket handler ${this.name} rejected: ${err}`);
+         send({err: err});
       });
    }
 }
@@ -218,6 +222,45 @@ module.exports.start = function (options, startNextModule) {
 module.exports.WebsocketServer = WebsocketServer;
 
 /**
+* ## Getting started
+*
+* When the module is started, the websocket server and handler is automatically
+* registered against the HTTP server. You dont need to start the server manually!
+*
+* Websocket messages have the form:
+* {func: "<function>", data: {...}, token: "<optional JWT token>"}
+* Any other attributes are copied to the response
+*
+* Register a handler like this:
+* ```js
+* API.onWSMessage("myfunc", (msg, respondWS, userInfo) => {
+*     // userInfo contains the object extracted from the JWT (or {} if no token was supplied)
+*     // If the user does not have the required permissions or the message is malformed,
+*     // this function is not called but instead an error msg is sent!
+*     if(!userInfo.isAdmin) {
+*       return false;
+*     }
+*     // Handle message (msg is .data of the original message)
+*     console.log(msg.foobar)
+*     // Then send response. Convention is to have an err attribute
+*     respondWS({err: null, info: "It works"});
+*     // NOTE: You can call respondWS multiple times if required!
+* }, {}) // Empty ACL => no auth required
+* ```
+*
+* See the `rf-acl` package for documentation about the ACL syntax
+*
+* If you are using Promises, use this syntax
+* ```js
+* API.onWSMessagePromise("myfunc", (msg, respondWS, userInfo) => {
+*   return new Promise((resolve, reject) => {
+*     if(!userInfo.isAdmin) {
+*       return reject("nope"); // Will send {err: "nope"}
+*     }
+*     return resolve({"foo": "bar"}); // will send {err: null, "foo": "bar"}
+*   });
+* }, {}) // Empty ACL => no auth required
+* ```
 *
 * ## PeerDependencies
 * * `rf-log`
