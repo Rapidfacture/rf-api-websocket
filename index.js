@@ -55,7 +55,6 @@ class WebsocketServer {
       } catch (ex) {
          return log.error(`Failed to parse websocket message JSON: ${ex}`);
       }
-      log.info('websocket message received');
       // Check msg validity
       if (!msg.func) {
          return log.error(`Received websocket message without specified func: ${util.inspect(msg)}`);
