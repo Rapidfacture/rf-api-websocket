@@ -36,8 +36,7 @@
     "mdextract": "1.0.0"
   },
   "scripts": {
-    "prepublish": "npm run-script doc && sh test/isRepoClean && npm test",
-    "test": "grunt",
-    "doc": "node_modules/mdextract/bin/mdextract index.js > README.md"
+     "prepublish": "sh test/isRepoClean && npm test",
+     "test": "grunt"
   }
 }
