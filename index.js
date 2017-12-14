@@ -1,7 +1,7 @@
 const WebSocketServer = require('ws').Server;
 const log = require('rf-log');
 const util = require('util');
-const _ = require("lodash");
+const _ = require('lodash');
 
 /**
 * # rf-api-websocket
@@ -20,7 +20,7 @@ class WebsocketServer {
    * * Uses JSON messages
    */
    constructor (httpServer) {
-      log.info("Initializing websocket server")
+      log.info('Initializing websocket server');
       // Initialize server
       this.server = new WebSocketServer({
          server: httpServer
