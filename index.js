@@ -201,6 +201,24 @@ class PromiseHandler {
 }
 
 
+/**
+ * Represents a websocket request object that contains
+ * information on 
+ */
+class WebsocketRequest {
+  constructor(msg) {
+    this.data = msg.data;
+  }
+
+  send(err, data) {
+    // NOTE: Multiple calls will send multiple msgs
+    const wsObj = protoObj;
+    wsObj.data = newData;
+    return this.sendObj(ws, wsObj);
+  }
+}
+
+
 // integrate into `rf-api`
 // TODO: is this the correct way? the websockets will be in "Services"?
 module.exports.start = function (options, startNextModule) {
