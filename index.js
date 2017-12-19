@@ -73,12 +73,9 @@ class WebsocketServer {
          return log.error(`Can't find any handler for function ${func}`);
       }
       // Call handler with custom "send" callback
-      return handler.handle(data, newData => {
-         // NOTE: Multiple calls will send multiple msgs
-         const wsObj = protoObj;
-         wsObj.data = newData;
-         return this.sendObj(ws, wsObj);
-      });
+      return handler.handle(new WebsocketRequest(msg, response => {
+         return this.sendObj(ws, response);
+      }));
    }
 
    /* ---------------- ws methods ---------------- */
@@ -167,9 +164,9 @@ class CallbackHandler {
       this.acl = acl;
    }
 
-   handle (data, send) {
+   handle (req) {
       try {
-         this.callback(data, send);
+         this.callback(req);
       } catch (err) {
          log.error(`Exception in websocket handler ${this.name}: ${err}`);
       }
@@ -185,17 +182,14 @@ class PromiseHandler {
       this.acl = acl;
    }
 
-   handle (data, send) {
-      this.callback(data).then(result => {
+   handle (req) {
+      this.callback(req).then(result => {
          if (result !== null) {
-            if (!result.err) {
-               result.err = null;
-            }
-            send(result);
+            req.send(null, result);
          }
       }).catch(err => {
          log.error(`Websocket handler ${this.name} rejected: ${err}`);
-         send({err: err});
+         req.send(err, {});
       });
    }
 }
