@@ -198,10 +198,10 @@ class PromiseHandler {
 /**
  * Represents a websocket request object that contains
  * information on.
- * 
+ *
  * This object is constructed internally and should not be constructed
  * by the user.
- * 
+ *
  * ```js
  * let req = ... // any websocket request
  * req.msg // The original request, req.msg.data == req.data
