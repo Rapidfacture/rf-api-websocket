@@ -212,7 +212,7 @@ class PromiseHandler {
 class WebsocketRequest {
    constructor (msg, sendResponse) {
       this.msg = msg;
-      this.data = msg.data;
+      this.data = msg.data || {};
       this.sendResponse = sendResponse;
    }
 
