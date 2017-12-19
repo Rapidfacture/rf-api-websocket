@@ -168,7 +168,7 @@ class CallbackHandler {
       try {
          this.callback(req);
       } catch (err) {
-         log.error(`Exception in websocket handler ${this.name}: ${err}`);
+         log.error(`Exception in websocket handler '${this.name}': ${err}`);
       }
    }
 }
