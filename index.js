@@ -244,15 +244,16 @@ class WebsocketRequest {
     * req.send(null, {foo: "bar"}) // Send data, no error
     * req.send("describe error here", {foo: "bar"}) // Send error + data
     * req.send("describe error here") // Send error without data
+    * req.send("Not permitted to do this", {}, 'auth-failed') // Send with custom errsrc. Default is 'application'
     * ```
     * Multiple calls will send multiple messages
     */
-   send (err, data = {}) {
+   send (err, data = {}, errsrc = 'application') {
       // NOTE: Multiple calls will send multiple msgs
       const responseObj = _.cloneDeep(this.msg);
       responseObj.data = data || {};
       responseObj.err = err || null;
-      responseObj.errsrc = 'application';
+      responseObj.errsrc = errsrc;
       this.sendResponse(responseObj);
    }
 }
