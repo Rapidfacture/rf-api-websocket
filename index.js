@@ -203,19 +203,41 @@ class PromiseHandler {
 
 /**
  * Represents a websocket request object that contains
- * information on 
+ * information on.
+ * 
+ * This object is constructed internally and should not be constructed
+ * by the user.
+ * 
+ * ```js
+ * let req = ... // any websocket request
+ * req.msg // The original request, req.msg.data == req.data
+ * req.data // The request data
+ * req.send(...) // See docs for WebsocketRequest.send()
+ * ```
  */
 class WebsocketRequest {
-  constructor(msg) {
-    this.data = msg.data;
-  }
+   constructor (msg, sendResponse) {
+      this.msg = msg;
+      this.data = msg.data;
+      this.sendResponse = sendResponse;
+   }
 
-  send(err, data) {
-    // NOTE: Multiple calls will send multiple msgs
-    const wsObj = protoObj;
-    wsObj.data = newData;
-    return this.sendObj(ws, wsObj);
-  }
+   /**
+    * Send a response to the requester.
+    * ```js
+    * req.send(null, {foo: "bar"}) // Send data, no error
+    * req.send("describe error here", {foo: "bar"}) // Send error + data
+    * req.send("describe error here") // Send error without data
+    * ```
+    * Multiple calls will send multiple messages
+    */
+   send (err, data = {}) {
+      // NOTE: Multiple calls will send multiple msgs
+      const responseObj = _.cloneDeep(this.msg);
+      responseObj.data = data || {};
+      responseObj.err = err || null;
+      this.sendResponse(responseObj);
+   }
 }
 
 

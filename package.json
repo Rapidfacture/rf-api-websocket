@@ -36,7 +36,7 @@
     "mdextract": "1.0.0"
   },
   "scripts": {
-     "prepublish": "sh test/isRepoClean && npm test",
-     "test": "grunt"
+    "prepublish": "sh test/isRepoClean && npm test",
+    "test": "grunt"
   }
 }
