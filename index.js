@@ -18,8 +18,13 @@ class WebsocketServer {
    * * Websocket communication service
    * * Allows safe RPC
    * * Uses JSON messages
+   *
+   * checkACL(token, acl) is a function
+   *   that returns a Promise that resolves with a userInfo object
+   *   or rejects if this token is not valid for the given ACL.
+   * Usually, checkACL from the rf-acl project is used
    */
-   constructor (httpServer) {
+   constructor (httpServer, checkACL) {
       log.info('Initializing websocket server');
       // Initialize server
       this.server = new WebSocketServer({
@@ -48,6 +53,14 @@ class WebsocketServer {
       }
    }
 
+   _sendErrorMessage (ws, msg, err, errsrc) {
+      // Modify msg directly because there is no way multiple responses could be sent
+      delete msg['data'];
+      msg.err = `ACL error: ${err}`;
+      msg.errsrc = 'auth-fail';
+      this.sendObj(ws, msg);
+   }
+
    onMessage (ws, data, flags) {
       let msg = {};
       try {
@@ -57,21 +70,33 @@ class WebsocketServer {
       }
       // Check msg validity
       if (!msg.func) {
+         this._sendErrorMessage(ws, msg, 'format',
+            `msg.func is null or undefined. Please specify the function to use`);
          return log.error(`Received websocket message without specified func: ${util.inspect(msg)}`);
       }
       if (_.isNil(msg.data)) { // null or undefined. Empty data is OK as long as its present
+         this._sendErrorMessage(ws, msg, 'format',
+            `msg.data is null or undefined. Use empty data object if there is no data to send`);
          return log.error(`Received websocket message without any data: ${util.inspect(msg)}`);
       }
       // Try to find correct function
       const func = msg.func;
       const handler = this.handlers[func];
       if (!handler) {
-         return log.error(`Can't find any handler for function ${func}`);
+         const msg = `No handler found for function ${func}`;
+         log.error(msg);
+         return this._sendErrorMessage(ws, msg, 'no-such-handler', msg);
       }
-      // Call handler with custom "send" callback
-      return handler.handle(new WebsocketRequest(msg, response =>
-         this.sendObj(ws, response)
-      ));
+      // Try to parse ACL
+      const token = msg.token;
+      this.checkACL(token).then(userObj => { // ACL check passed
+         // Call handler with custom "send" callback
+         handler.handle(new WebsocketRequest(msg, userObj, response =>
+            this.sendObj(ws, response)
+         ));
+      }).catch(err => { // Either token parsing failed or the user is not permitted to access the ACL thing
+         return this._sendErrorMessage(ws, msg, 'auth-fail', `ACL error: ${err}`);
+      });
    }
 
    /* ---------------- ws methods ---------------- */
@@ -202,11 +227,12 @@ class PromiseHandler {
  * let req = ... // any websocket request
  * req.msg // The original request, req.msg.data == req.data
  * req.data // The request data
+ * req.userInfo // Authenticated user information from the token
  * req.send(...) // See docs for WebsocketRequest.send()
  * ```
  */
 class WebsocketRequest {
-   constructor (msg, sendResponse) {
+   constructor (msg, userInfo, sendResponse) {
       this.msg = msg;
       this.data = msg.data || {};
       this.sendResponse = sendResponse;
@@ -226,6 +252,7 @@ class WebsocketRequest {
       const responseObj = _.cloneDeep(this.msg);
       responseObj.data = data || {};
       responseObj.err = err || null;
+      responseObj.errsrc = 'application';
       this.sendResponse(responseObj);
    }
 }
@@ -233,10 +260,11 @@ class WebsocketRequest {
 
 // integrate into `rf-api`
 // TODO: is this the correct way? the websockets will be in "Services"?
-module.exports.start = function (options, startNextModule) {
+module.exports.start = function (options, startNextModule, services) {
+   const Services = require('rf-load').require('rf-api').Services;
    const API = require('rf-load').require('rf-api').API;
    const http = require('rf-load').require('http');
-   const instance = new WebsocketServer(http.server);
+   const instance = new WebsocketServer(http.server, Services.checkACL);
 
    API.onWSMessage = function (...args) { instance.addHandler(...args); };
    API.onWSMessagePromise = function (...args) { instance.addPromiseHandler(...args); };
