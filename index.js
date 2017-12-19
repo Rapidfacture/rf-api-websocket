@@ -62,10 +62,6 @@ class WebsocketServer {
       if (_.isNil(msg.data)) { // null or undefined. Empty data is OK as long as its present
          return log.error(`Received websocket message without any data: ${util.inspect(msg)}`);
       }
-      data = msg.data;
-      // Prepare "prototype" (to be sent back), i.e. keep anything besides 'data'
-      const protoObj = msg;
-      delete protoObj.data;
       // Try to find correct function
       const func = msg.func;
       const handler = this.handlers[func];
@@ -73,9 +69,9 @@ class WebsocketServer {
          return log.error(`Can't find any handler for function ${func}`);
       }
       // Call handler with custom "send" callback
-      return handler.handle(new WebsocketRequest(msg, response => {
-         return this.sendObj(ws, response);
-      }));
+      return handler.handle(new WebsocketRequest(msg, response =>
+         this.sendObj(ws, response)
+      ));
    }
 
    /* ---------------- ws methods ---------------- */
