@@ -95,7 +95,7 @@ class WebsocketServer {
      * ```
      * * `funcName` The name of the handler. In order for the handler to be called, this needs to be used
      * in the func attribute of the received websocket message.
-     * * `callback` The handler function(msg, responseCallback(msg))
+     * * `callback` The handler function()
      * * `acl` Optional ACD configuraton
      */
    addHandler (funcName, callback, acl = {}) {
@@ -112,7 +112,7 @@ class WebsocketServer {
      * ```
      * * `funcName` The name of the handler. In order for the handler to be called, this needs to be used
      * in the func attribute of the received websocket message.
-     * * `callback` The handler function(msg, responseCallback(msg))
+     * * `callback` The handler function(req) which returns a Promise
      * * `acl` Optional ACD configuraton
      */
    addPromiseHandler (funcName, genPromise, acl = {}) {
@@ -263,18 +263,20 @@ module.exports.WebsocketServer = WebsocketServer;
 *
 * Register a handler like this:
 * ```js
-* API.onWSMessage("myfunc", (msg, respondWS, userInfo) => {
+* API.onWSMessage("myfunc", (req) => {
 *     // userInfo contains the object extracted from the JWT (or {} if no token was supplied)
 *     // If the user does not have the required permissions or the message is malformed,
 *     // this function is not called but instead an error msg is sent!
-*     if(!userInfo.isAdmin) {
+*     if(!req.userInfo.isAdmin) {
 *       return false;
 *     }
 *     // Handle message (msg is .data of the original message)
-*     console.log(msg.foobar)
+*     console.log(req.data.foobar)
 *     // Then send response. Convention is to have an err attribute
-*     respondWS({err: null, info: "It works"});
-*     // NOTE: You can call respondWS multiple times if required!
+*     req.send(null, {info: "It works"});
+*     // On error use this (data object is optional)
+*     req.send("it didnt work", {description: `${err}`});
+*     // NOTE: You can call req.send multiple times if required!
 * }, {}) // Empty ACL => no auth required
 * ```
 *
@@ -282,12 +284,12 @@ module.exports.WebsocketServer = WebsocketServer;
 *
 * If you are using Promises, use this syntax
 * ```js
-* API.onWSMessagePromise("myfunc", (msg, respondWS, userInfo) => {
+* API.onWSMessagePromise("myfunc", (req) => {
 *   return new Promise((resolve, reject) => {
-*     if(!userInfo.isAdmin) {
-*       return reject("nope"); // Will send {err: "nope"}
+*     if(!req.userInfo.isAdmin) {
+*       return reject("nope"); // Equivalent to req.send("nope")
 *     }
-*     return resolve({"foo": "bar"}); // will send {err: null, "foo": "bar"}
+*     return resolve({"foo": "bar"}); // Equivalent to req.send(null, {"foo": "bar"})
 *   });
 * }, {}) // Empty ACL => no auth required
 * ```
