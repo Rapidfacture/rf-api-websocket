@@ -83,7 +83,7 @@ class WebsocketServer {
       const func = msg.func;
       const handler = this.handlers[func];
       if (!handler) {
-         const msg = `No handler found for function ${func}`;
+         const msg = `No handler found for function '${func}'`;
          log.error(msg);
          return this._sendErrorMessage(ws, msg, 'no-such-handler', msg);
       }
