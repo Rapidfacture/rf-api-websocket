@@ -250,6 +250,7 @@ module.exports.start = function (options, startNextModule) {
 
 // Export class for the unlikely case of non-rf-api users. But who knows?
 module.exports.WebsocketServer = WebsocketServer;
+module.exports.WebsocketRequest = WebsocketRequest;
 
 /**
 * ## Getting started
