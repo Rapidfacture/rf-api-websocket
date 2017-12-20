@@ -220,7 +220,7 @@ class PromiseHandler {
 /**
  * Represents a websocket request object that contains
  * information on the request message and provides means to respond.
- * 
+ *
  * NOTE: The SAME OBJECT is used as request AND response object.
  * The same object is passed to the handler TWICE!
  *
