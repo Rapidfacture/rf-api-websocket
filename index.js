@@ -33,6 +33,7 @@ class WebsocketServer {
       this.server.on('connection', (ws) => this.onConnection(ws));
       this.allWS = []; // All active connections for broadcast
       this.handlers = {}; // func name => handler(msg, responseCallback(err, ))
+      this.checkACL = checkACL;
    }
 
    onConnection (ws) {
