@@ -187,7 +187,8 @@ class CallbackHandler {
 
    handle (req) {
       try {
-         this.callback(req);
+         // Use the SAME object for request AND response to avoid code dupes
+         this.callback(req, req);
       } catch (err) {
          log.error(`Exception in websocket handler '${this.name}': ${err}`);
       }
@@ -204,7 +205,7 @@ class PromiseHandler {
    }
 
    handle (req) {
-      this.callback(req).then(result => {
+      this.callback(req, req).then(result => {
          if (result !== null) {
             req.send(null, result);
          }
@@ -218,17 +219,22 @@ class PromiseHandler {
 
 /**
  * Represents a websocket request object that contains
- * information on.
+ * information on the request message and provides means to respond.
+ * 
+ * NOTE: The SAME OBJECT is used as request AND response object.
+ * The same object is passed to the handler TWICE!
  *
  * This object is constructed internally and should not be constructed
  * by the user.
  *
  * ```js
- * let req = ... // any websocket request
- * req.msg // The original request, req.msg.data == req.data
- * req.data // The request data
- * req.userInfo // Authenticated user information from the token
- * req.send(...) // See docs for WebsocketRequest.send()
+ * function handler(req, res) {
+ *    let req = ... // any websocket request
+ *    req.msg // The original request, req.msg.data == req.data
+ *    req.data // The request data
+ *    req.userInfo // Authenticated user information from the token
+ *    res.send(...) // See docs for WebsocketRequest.send()
+ * }
  * ```
  */
 class WebsocketRequest {
