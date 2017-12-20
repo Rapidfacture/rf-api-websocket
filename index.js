@@ -270,8 +270,10 @@ class WebsocketRequest {
 // TODO: is this the correct way? the websockets will be in "Services"?
 module.exports.start = function (options, startNextModule, services) {
    const API = require('rf-load').require('rf-api').API;
+   // TODO Why twice Services?
+   const Services = API.Services.Services;
    const http = require('rf-load').require('http');
-   const instance = new WebsocketServer(http.server, API.Services.checkACL);
+   const instance = new WebsocketServer(http.server, Services.checkACL);
 
    API.onWSMessage = function (...args) { instance.addHandler(...args); };
    API.onWSMessagePromise = function (...args) { instance.addPromiseHandler(...args); };
