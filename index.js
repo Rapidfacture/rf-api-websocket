@@ -268,10 +268,9 @@ class WebsocketRequest {
 // integrate into `rf-api`
 // TODO: is this the correct way? the websockets will be in "Services"?
 module.exports.start = function (options, startNextModule, services) {
-   const Services = require('rf-load').require('rf-api').Services;
    const API = require('rf-load').require('rf-api').API;
    const http = require('rf-load').require('http');
-   const instance = new WebsocketServer(http.server, Services.checkACL);
+   const instance = new WebsocketServer(http.server, API.Services.checkACL);
 
    API.onWSMessage = function (...args) { instance.addHandler(...args); };
    API.onWSMessagePromise = function (...args) { instance.addPromiseHandler(...args); };
