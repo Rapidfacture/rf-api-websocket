@@ -260,7 +260,7 @@ class WebsocketRequest {
       const responseObj = _.cloneDeep(this.msg);
       responseObj.data = data || {};
       responseObj.err = err || null;
-      responseObj.errsrc = errsrc;
+      responseObj.errsrc = _.isNil(err) ? undefined : errsrc;
       this.sendResponse(responseObj);
    }
 }
