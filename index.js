@@ -188,6 +188,7 @@ class CallbackHandler {
 
    handle (req) {
       try {
+         log.info(this.name);
          // Use the SAME object for request AND response to avoid code dupes
          this.callback(req, req);
       } catch (err) {
