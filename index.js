@@ -59,7 +59,7 @@ class WebsocketServer {
       delete msg['data'];
       msg.err = `ACL error: ${err}`;
       msg.errsrc = 'auth-fail';
-      this.sendObj(ws, msg);
+      this.sendObj(ws, msg, msg.callbackId);
    }
 
    onMessage (ws, data, flags) {
@@ -93,7 +93,7 @@ class WebsocketServer {
       this.checkACL(token).then(userObj => { // ACL check passed
          // Call handler with custom "send" callback
          handler.handle(new WebsocketRequest(msg, userObj, response =>
-            this.sendObj(ws, response)
+            this.sendObj(ws, response, msg.callbackId)
          ));
       }).catch(err => { // Either token parsing failed or the user is not permitted to access the ACL thing
          return this._sendErrorMessage(ws, msg, 'auth-fail', `ACL error: ${err}`);
@@ -146,10 +146,10 @@ class WebsocketServer {
      * ```js
      * services.sendObj (ws, obj)
      * ```
-     * TODO: integrate callbackID
-     * maybe one raw send method, and one preconfigured (default to use)
      */
-   sendObj (ws, obj) {
+   sendObj (ws, obj, callbackId) {
+      if (callbackId) obj.callbackId = callbackId;
+
       try {
          return ws.send(JSON.stringify(obj));
       } catch (err) {
