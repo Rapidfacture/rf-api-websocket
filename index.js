@@ -148,6 +148,15 @@ class WebsocketServer {
      * ```
      */
    sendObj (ws, obj, callbackId) {
+      // TODO: clean this mess up
+      var data = JSON.parse(JSON.stringify(obj));
+      delete data.err;
+
+      obj = {
+         err: obj.err,
+         data: data
+      };
+
       if (callbackId) obj.callbackId = callbackId;
 
       try {

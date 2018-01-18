@@ -1,6 +1,6 @@
 {
   "name": "rf-api-websocket",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "description": "rf-api implementation for RPC over websockets using JSON messages with optional ACL",
   "author": {
     "name": "Uli Köhler"
