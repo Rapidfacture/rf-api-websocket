@@ -20,7 +20,7 @@ class WebsocketServer {
    * * Uses JSON messages
    *
    * checkACL(token, acl) is a function
-   *   that returns a Promise that resolves with a userInfo object
+   *   that returns a Promise that resolves with a custom attributes object
    *   or rejects if this token is not valid for the given ACL.
    * Usually, checkACL from the rf-acl project is used
    */
@@ -90,9 +90,9 @@ class WebsocketServer {
       }
       // Try to parse ACL
       const token = msg.token;
-      this.checkACL(token).then(userObj => { // ACL check passed
+      this.checkACL(token).then(customAttributes => { // ACL check passed
          // Call handler with custom "send" callback
-         handler.handle(new WebsocketRequest(msg, userObj, response =>
+         handler.handle(new WebsocketRequest(msg, customAttributes, response =>
             this.sendObj(ws, response, msg.callbackId)
          ));
       }).catch(err => { // Either token parsing failed or the user is not permitted to access the ACL thing
@@ -243,16 +243,18 @@ class PromiseHandler {
  *    let req = ... // any websocket request
  *    req.msg // The original request, req.msg.data == req.data
  *    req.data // The request data
- *    req.userInfo // Authenticated user information from the token
+ *    req.[...] // Custom attributes as defined by the ACL layer
  *    res.send(...) // See docs for WebsocketRequest.send()
  * }
  * ```
  */
 class WebsocketRequest {
-   constructor (msg, userInfo, sendResponse) {
+   constructor (msg, customAttributes, sendResponse) {
       this.msg = msg;
       this.data = msg.data || {};
       this.sendResponse = sendResponse;
+      // Add custom attributes to this directl
+      _.extend(this, customAttributes);
    }
 
    /**
@@ -308,10 +310,9 @@ module.exports.WebsocketRequest = WebsocketRequest;
 * Register a handler like this:
 * ```js
 * API.onWSMessage("myfunc", (req) => {
-*     // userInfo contains the object extracted from the JWT (or {} if no token was supplied)
-*     // If the user does not have the required permissions or the message is malformed,
-*     // this function is not called but instead an error msg is sent!
-*     if(!req.userInfo.isAdmin) {
+*     // NOTE: Custom attributes are defined by the ACL layer.
+*     // This is just a basic example on how to use it
+*     if(req.session.isExpired) {
 *       return false;
 *     }
 *     // Handle message (msg is .data of the original message)
@@ -330,6 +331,8 @@ module.exports.WebsocketRequest = WebsocketRequest;
 * ```js
 * API.onWSMessagePromise("myfunc", (req) => {
 *   return new Promise((resolve, reject) => {
+*     // NOTE: Custom attributes are defined by the ACL layer.
+*     // This is just a basic example on how to use it
 *     if(!req.userInfo.isAdmin) {
 *       return reject("nope"); // Equivalent to req.send("nope")
 *     }
