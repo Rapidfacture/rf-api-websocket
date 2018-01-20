@@ -247,7 +247,7 @@ class WebsocketRequest {
       // Add custom attributes to this directl
       _.extend(this, customAttributes);
       // Hack around some libraries exchanging "this" pointer before call
-      this.send = this.send.bind(this)
+      this.send = this.send.bind(this);
    }
 
    /**
