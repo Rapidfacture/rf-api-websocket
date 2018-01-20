@@ -232,7 +232,7 @@ class PromiseHandler {
  * ```js
  * function handler(req, res) {
  *    let req = ... // any websocket request
- *    req.msg // The original request, req.msg.data == req.data
+ *    req.originalRequest // The original request, req.originalRequest.data == req.data
  *    req.data // The request data
  *    req.[...] // Custom attributes as defined by the ACL layer
  *    res.send(...) // See docs for WebsocketRequest.send()
@@ -240,9 +240,9 @@ class PromiseHandler {
  * ```
  */
 class WebsocketRequest {
-   constructor (msg, customAttributes, sendResponse) {
-      this.msg = msg;
-      this.data = msg.data || {};
+   constructor (originalRequest, customAttributes, sendResponse) {
+      this.originalRequest = originalRequest;
+      this.data = originalRequest.data || {};
       this.sendResponse = sendResponse;
       // Add custom attributes to this directl
       _.extend(this, customAttributes);
@@ -260,7 +260,7 @@ class WebsocketRequest {
     */
    send (err, data = {}, errsrc = 'application') {
       // NOTE: Multiple calls will send multiple msgs
-      const responseObj = _.cloneDeep(this.msg);
+      const responseObj = _.cloneDeep(this.originalRequest);
       responseObj.data = data || {};
       responseObj.err = err || null;
       responseObj.errsrc = _.isNil(err) ? undefined : errsrc;
