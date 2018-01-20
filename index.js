@@ -261,6 +261,9 @@ class WebsocketRequest {
    send (err, data = {}, errsrc = 'application') {
       // NOTE: Multiple calls will send multiple msgs
       const responseObj = _.cloneDeep(this.originalRequest);
+      // Remove blacklisted attributes that just take up space
+      delete responseObj['token'];
+      // Add always-present attributes
       responseObj.data = data || {};
       responseObj.err = err || null;
       responseObj.errsrc = _.isNil(err) ? undefined : errsrc;
