@@ -327,7 +327,7 @@ module.exports.WebsocketRequest = WebsocketRequest;
 *   return new Promise((resolve, reject) => {
 *     // NOTE: Custom attributes are defined by the ACL layer.
 *     // This is just a basic example on how to use it
-*     if(!req.userInfo.isAdmin) {
+*     if(!req.session.isAdmin) { /* EXAMPLE ONLY - DOES NOT ACTUALLY EXIST
 *       return reject("nope"); // Equivalent to req.send("nope")
 *     }
 *     return resolve({"foo": "bar"}); // Equivalent to req.send(null, {"foo": "bar"})
