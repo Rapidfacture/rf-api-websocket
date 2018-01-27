@@ -90,7 +90,7 @@ class WebsocketServer {
       }
       // Try to parse ACL
       const token = msg.token;
-      this.checkACL(token).then(customAttributes => { // ACL check passed
+      this.checkACL(token, handler.acl).then(customAttributes => { // ACL check passed
          // Call handler with custom "send" callback
          handler.handle(new WebsocketRequest(msg, customAttributes, response =>
             this.sendObj(ws, response)
