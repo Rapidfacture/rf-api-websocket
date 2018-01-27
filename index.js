@@ -43,6 +43,9 @@ class WebsocketServer {
       // console.log(ws.upgradeReq.url);
       ws.on('message', (data, flags) => this.onMessage(ws, data, flags));
       ws.on('close', () => this.onClose(ws));
+      ws.on('error', (err) => {
+         console.error(`Raw websocket error: ${err}`);
+      });
    }
 
    onClose (ws) {
