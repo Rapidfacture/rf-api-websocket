@@ -57,8 +57,8 @@ class WebsocketServer {
    _sendErrorMessage (ws, msg, err, errsrc) {
       // Modify msg directly because there is no way multiple responses could be sent
       delete msg['data'];
-      msg.err = `ACL error: ${err}`;
-      msg.errsrc = 'auth-fail';
+      msg.err = err;
+      msg.errsrc = errsrc;
       this.sendObj(ws, msg);
    }
 
@@ -71,13 +71,13 @@ class WebsocketServer {
       }
       // Check msg validity
       if (!msg.func) {
-         this._sendErrorMessage(ws, msg, 'format',
-            `msg.func is null or undefined. Please specify the function to use`);
+         this._sendErrorMessage(ws, msg,
+            `msg.func is null or undefined. Please specify the function to use`, 'msgformat');
          return log.error(`Received websocket message without specified func: ${util.inspect(msg)}`);
       }
       if (_.isNil(msg.data)) { // null or undefined. Empty data is OK as long as its present
-         this._sendErrorMessage(ws, msg, 'format',
-            `msg.data is null or undefined. Use empty data object if there is no data to send`);
+         this._sendErrorMessage(ws, msg,
+            `msg.data is null or undefined. Use empty data object if there is no data to send`, 'msgformat');
          return log.error(`Received websocket message without any data: ${util.inspect(msg)}`);
       }
       // Try to find correct function
@@ -86,7 +86,7 @@ class WebsocketServer {
       if (!handler) {
          const msg = `No handler found for function '${func}'`;
          log.error(msg);
-         return this._sendErrorMessage(ws, msg, 'no-such-handler', msg);
+         return this._sendErrorMessage(ws, msg, `Handler not found: ${func}`, 'no-such-handler');
       }
       // Try to parse ACL
       const token = msg.token;
@@ -96,7 +96,7 @@ class WebsocketServer {
             this.sendObj(ws, response)
          ));
       }).catch(err => { // Either token parsing failed or the user is not permitted to access the ACL thing
-         return this._sendErrorMessage(ws, msg, 'auth-fail', `ACL error: ${err}`);
+         return this._sendErrorMessage(ws, msg, `ACL error: ${err}`, 'acl');
       });
    }
 
