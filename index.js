@@ -1,7 +1,16 @@
 const WebSocketServer = require('ws').Server;
-const log = require('rf-log');
 const util = require('util');
 const _ = require('lodash');
+
+// error handling
+var log = {
+   info: console.log,
+   error: console.error
+};
+try { // try using rf-log
+   log = require('rf-log').customPrefixLogger('[rf-api-websocket]');
+} catch (e) {}
+
 
 /**
 * # rf-api-websocket
@@ -44,7 +53,7 @@ class WebsocketServer {
       ws.on('message', (data, flags) => this.onMessage(ws, data, flags));
       ws.on('close', () => this.onClose(ws));
       ws.on('error', (err) => {
-         console.error(`Raw websocket error: ${err}`);
+         log.error(`Raw websocket error: ${err}`);
       });
    }
 
@@ -87,9 +96,9 @@ class WebsocketServer {
       const func = msg.func;
       const handler = this.handlers[func];
       if (!handler) {
-         const msg = `No handler found for function '${func}'`;
-         log.error(msg);
-         return this._sendErrorMessage(ws, msg, `Handler not found: ${func}`, 'no-such-handler');
+         const error = `No handler API.onWSMessage'${func}' defined!`;
+         log.error(error);
+         return this._sendErrorMessage(ws, {}, error, 'no-such-handler');
       }
       // Try to parse ACL
       const token = msg.token;
