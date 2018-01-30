@@ -2,13 +2,13 @@ const WebSocketServer = require('ws').Server;
 const util = require('util');
 const _ = require('lodash');
 
-// error handling
+// logging
 var log = {
    info: console.log,
    error: console.error
 };
 try { // try using rf-log
-   log = require('rf-log').customPrefixLogger('[rf-api-websocket]');
+   log = require(require.resolve('rf-log')).customPrefixLogger('[rf-api-websocket]');
 } catch (e) {}
 
 
