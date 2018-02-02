@@ -283,8 +283,39 @@ class WebsocketRequest {
       responseObj.errsrc = _.isNil(err) ? undefined : errsrc;
       this.sendResponse(responseObj);
    }
-}
 
+   //
+   // Utility functions to mirror rf-api's behaviour
+   //
+
+   errorBadRequest (err) {
+      return this.send(`Bad request: ${err}`, null);
+   }
+
+   error (err) {
+      return this.send(`Server error: ${err}`, null);
+   }
+
+   errorAuthorizationRequired (err) {
+      return this.send(`Authorization required: ${err}`, null);
+   }
+
+   errorAccessDenied (err) {
+      return this.send(`Access denied: ${err}`, null);
+   }
+
+   errorNotFound (err) {
+      return this.send(`Not found: ${err}`, null);
+   }
+
+   errorAlreadyExists (err) {
+      return this.send(`Already exists: ${err}`, null);
+   }
+
+   errorNoLongerExists (err) {
+      return this.send(`No longer exists: ${err}`, null);
+   }
+}
 
 // integrate into `rf-api`
 // TODO: is this the correct way? the websockets will be in "Services"?
