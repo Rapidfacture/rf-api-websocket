@@ -24,7 +24,7 @@
     "ws": "3.3.2"
   },
   "peerDependencies": {
-    "rf-load": "^0.1.10"
+    "rf-load": "0.1.10"
   },
   "devDependencies": {
     "grunt": "1.0.1",
