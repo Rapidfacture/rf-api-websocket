@@ -204,7 +204,7 @@ class CallbackHandler {
          // Use the SAME object for request AND response to avoid code dupes
          this.callback(req, req);
       } catch (err) {
-         log.error(`Exception in websocket handler '${this.name}': ${err}`);
+         log.error(`Exception in websocket handler '${this.name}': ${err}\nStacktrace:\n${err.stack}`);
       }
    }
 }
