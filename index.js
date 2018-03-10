@@ -323,7 +323,7 @@ module.exports.start = function (options, startNextModule, services) {
    const API = options.API || require('rf-load').require('rf-api').API;
    // TODO Why twice Services?
    const Services = API.Services.Services;
-   const http = require('rf-load').require('http');
+   const http = options.http || require('rf-load').require('http');
    const instance = new WebsocketServer(http.server, Services.checkACL);
 
    API.onWSMessage = function (...args) { instance.addHandler(...args); };
