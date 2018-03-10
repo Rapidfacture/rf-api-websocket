@@ -320,7 +320,7 @@ class WebsocketRequest {
 // integrate into `rf-api`
 // TODO: is this the correct way? the websockets will be in "Services"?
 module.exports.start = function (options, startNextModule, services) {
-   const API = require('rf-load').require('rf-api').API;
+   const API = options.API || require('rf-load').require('rf-api').API;
    // TODO Why twice Services?
    const Services = API.Services.Services;
    const http = require('rf-load').require('http');
@@ -329,7 +329,7 @@ module.exports.start = function (options, startNextModule, services) {
    API.onWSMessage = function (...args) { instance.addHandler(...args); };
    API.onWSMessagePromise = function (...args) { instance.addPromiseHandler(...args); };
 
-   startNextModule();
+   if (startNextModule) startNextModule();
 };
 
 // Export class for the unlikely case of non-rf-api users. But who knows?
@@ -380,11 +380,6 @@ module.exports.WebsocketRequest = WebsocketRequest;
 * }, {}) // Empty ACL => no auth required
 * ```
 *
-* ## PeerDependencies
-* * `rf-log`
-* * `rf-load`
-* * `rf-api`
-* * rapidfacture `http` file
 *
 * ## Development
 *
