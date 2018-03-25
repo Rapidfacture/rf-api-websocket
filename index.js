@@ -17,8 +17,6 @@ try { // try using rf-log
 *
 * rf-api implementation for RPC over websockets using JSON messages with optional ACL.
 *
-* NOTE: Alpha!
-*
 */
 class WebsocketServer {
    /**
@@ -90,6 +88,9 @@ class WebsocketServer {
       if (_.isNil(msg.data)) { // null or undefined. Empty data is OK as long as its present
          this._sendErrorMessage(ws, msg,
             `msg.data is null or undefined. Use empty data object if there is no data to send`, 'msgformat');
+
+         // if this is keepCon (from old cad), send "bad token" to provoke a "logut"
+
          return log.error(`Received websocket message without any data: ${util.inspect(msg)}`);
       }
       // Try to find correct function
@@ -320,10 +321,10 @@ class WebsocketRequest {
 // integrate into `rf-api`
 // TODO: is this the correct way? the websockets will be in "Services"?
 module.exports.start = function (options, startNextModule, services) {
-   const API = options.API || require('rf-load').require('rf-api').API;
+   const API = options.API;
    // TODO Why twice Services?
    const Services = API.Services.Services;
-   const http = options.http || require('rf-load').require('http');
+   const http = options.http;
    const instance = new WebsocketServer(http.server, Services.checkACL);
 
    API.onWSMessage = function (...args) { instance.addHandler(...args); };
@@ -339,46 +340,49 @@ module.exports.WebsocketRequest = WebsocketRequest;
 /**
 * ## Getting started
 *
+* ### start the package
+*
 * When the module is started, the websocket server and handler is automatically
 * registered against the HTTP server. You dont need to start the server manually!
 *
-* Websocket messages have the form:
-* {func: "<function>", data: {...}, token: "<optional JWT token>"}
-* Any other attributes are copied to the response
-*
-* Register a handler like this:
 * ```js
-* API.onWSMessage("myfunc", (req) => {
-*     // NOTE: Custom attributes are defined by the ACL layer.
-*     // This is just a basic example on how to use it
-*     if(req.session.isExpired) {
-*       return false;
-*     }
-*     // Handle message (msg is .data of the original message)
-*     console.log(req.data.foobar)
-*     // Then send response. Convention is to have an err attribute
-*     req.send(null, {info: "It works"});
-*     // On error use this (data object is optional)
-*     req.send("it didnt work", {description: `${err}`});
-*     // NOTE: You can call req.send multiple times if required!
-* }, {}) // Empty ACL => no auth required
+*
+*
+* // prepare backend
+* var config = require('rf-config').init(__dirname); // config
+* var http = require('rf-http').start({ // webserver
+*    pathsWebserver: config.paths.webserver,
+*    port: config.port
+* });
+* var API = require('rf-api').start({app: http.app}); // prepare api
+* var mongooseMulti = require('mongoose-multi'); // databases
+* var db = mongooseMulti.start(config.db.urls, config.paths.schemas);
+*
+*
+* db.global.mongooseConnection.once('open', function () {
+*
+*    // optional: start access control; has to be done before starting the websocket
+*    require('rf-acl').start({
+*       API: API,
+*       db: db,
+*       app: http.app,
+*       sessionSecret: dbSettings.sessionSecret.value
+*    });
+*
+*    // start websocket connection;
+*    require('rf-api-websocket').start({API: API, http: http});
+*
+*    // start requests
+*    API.startApiFiles(config.paths.apis, function (startApi) {
+*       startApi(db, API, services);
+*    });
+* });
+*
+*
 * ```
 *
-* See the `rf-acl` package for documentation about the ACL syntax
+* ### Use Websocket requests
 *
-* If you are using Promises, use this syntax
-* ```js
-* API.onWSMessagePromise("myfunc", (req) => {
-*   return new Promise((resolve, reject) => {
-*     // NOTE: Custom attributes are defined by the ACL layer.
-*     // This is just a basic example on how to use it
-*     if(!req.session.isAdmin) { /* EXAMPLE ONLY - DOES NOT ACTUALLY EXIST
-*       return reject("nope"); // Equivalent to req.send("nope")
-*     }
-*     return resolve({"foo": "bar"}); // Equivalent to req.send(null, {"foo": "bar"})
-*   });
-* }, {}) // Empty ACL => no auth required
-* ```
 *
 *
 * ## Development
