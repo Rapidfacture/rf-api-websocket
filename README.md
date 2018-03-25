@@ -2,7 +2,6 @@
 
 rf-api implementation for RPC over websockets using JSON messages with optional ACL.
 
-NOTE: Alpha!
 
 ##  ws server
 * Uses express server instance
@@ -52,8 +51,48 @@ services.broadcast (obj)
 
 ## Getting started
 
+### start the package
+
 When the module is started, the websocket server and handler is automatically
 registered against the HTTP server. You dont need to start the server manually!
+
+```js
+
+
+// prepare backend
+var config = require('rf-config').init(__dirname); // config
+var http = require('rf-http').start({ // webserver
+   pathsWebserver: config.paths.webserver,
+   port: config.port
+});
+var API = require('rf-api').start({app: http.app}); // prepare api
+var mongooseMulti = require('mongoose-multi'); // databases
+var db = mongooseMulti.start(config.db.urls, config.paths.schemas);
+
+
+db.global.mongooseConnection.once('open', function () {
+
+   // optional: start access control; has to be done before starting the websocket
+   require('rf-acl').start({
+      API: API,
+      db: db,
+      app: http.app,
+      sessionSecret: dbSettings.sessionSecret.value
+   });
+
+   // start websocket connection;
+   require('rf-api-websocket').start({API: API, http: http});
+
+   // start requests
+   API.startApiFiles(config.paths.apis, function (startApi) {
+      startApi(db, API, services);
+   });
+});
+
+
+```
+
+### Use Websocket requests
 
 Websocket messages have the form:
 {func: "<function>", data: {...}, token: "<optional JWT token>"}
@@ -90,11 +129,6 @@ API.onWSMessagePromise("myfunc", (msg, respondWS, userInfo) => {
 }, {}) // Empty ACL => no auth required
 ```
 
-## PeerDependencies
-* `rf-log`
-* `rf-load`
-* `rf-api`
-* rapidfacture `http` file
 
 ## Development
 
