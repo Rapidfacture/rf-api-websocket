@@ -103,14 +103,20 @@ class WebsocketServer {
       }
       // Try to parse ACL
       const token = msg.token;
-      this.checkACL(token, handler.acl).then(customAttributes => { // ACL check passed
-         // Call handler with custom "send" callback
-         handler.handle(new WebsocketRequest(msg, customAttributes, response =>
+      if (this.checkACL) {
+         this.checkACL(token, handler.acl).then(customAttributes => { // ACL check passed
+            // Call handler with custom "send" callback
+            handler.handle(new WebsocketRequest(msg, customAttributes, response =>
+               this.sendObj(ws, response)
+            ));
+         }).catch(err => { // Either token parsing failed or the user is not permitted to access the ACL thing
+            return this._sendErrorMessage(ws, msg, `ACL error: ${err}`, 'acl');
+         });
+      } else {
+         handler.handle(new WebsocketRequest(msg, {}, response =>
             this.sendObj(ws, response)
          ));
-      }).catch(err => { // Either token parsing failed or the user is not permitted to access the ACL thing
-         return this._sendErrorMessage(ws, msg, `ACL error: ${err}`, 'acl');
-      });
+      }
    }
 
    /* ---------------- ws methods ---------------- */
